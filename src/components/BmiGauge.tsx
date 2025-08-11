@@ -100,7 +100,7 @@ const BmiGauge: React.FC<GaugeProps> = ({ bmi }) => {
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-base md:text-lg font-semibold text-primary">Result</h2>
+        <h2 className="text-[3rem] md:text-[4rem] font-semibold text-primary">Result</h2>
       </div>
       
       {/* BMI Result Value */}
