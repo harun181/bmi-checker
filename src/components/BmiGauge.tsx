@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 interface GaugeProps {
   bmi: number | null;
@@ -63,13 +63,34 @@ function categoryForBMI(bmi: number | null) {
   return segments[segments.length - 1];
 }
 
+// Custom hook for responsive design
+function useResponsive() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  return isMobile;
+}
+
 const BmiGauge: React.FC<GaugeProps> = ({ bmi }) => {
-  const width = 420;
-  const height = 260;
+  const isMobile = useResponsive();
+  
+  // Responsive dimensions
+  const width = isMobile ? 320 : 420;
+  const height = isMobile ? 200 : 260;
   const cx = width / 2;
   const cy = height * 0.95; // lower center to create a semi-circle
-  const rOuter = 180;
-  const rInner = 120;
+  const rOuter = isMobile ? 140 : 180;
+  const rInner = isMobile ? 90 : 120;
 
   const ticks = [15, 18.5, 25, 30, 35, 40];
 
@@ -79,10 +100,30 @@ const BmiGauge: React.FC<GaugeProps> = ({ bmi }) => {
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-sm font-semibold text-primary">Result</h2>
+        <h2 className="text-base md:text-lg font-semibold text-primary">Result</h2>
       </div>
-      <div className="relative">
-        <svg width={width} height={height} role="img" aria-label="BMI gauge">
+      
+      {/* BMI Result Value */}
+      {bmi && (
+        <div className="mb-3 md:mb-4 text-center">
+          <div className="text-2xl md:text-3xl lg:text-4xl font-bold" style={{ color: cat ? `hsl(var(${cat.colorVar}))` : undefined }}>
+            {bmi.toFixed(1)}
+          </div>
+          <div className="mt-1 text-xs md:text-sm font-medium text-muted-foreground">
+            {cat ? (cat.label === "Normal" ? "Normal" : cat.label) : ""}
+          </div>
+        </div>
+      )}
+      
+      <div className="relative w-full flex justify-center">
+        <svg 
+          width={width} 
+          height={height} 
+          viewBox={`0 0 ${width} ${height}`}
+          className="max-w-full h-auto"
+          role="img" 
+          aria-label="BMI gauge"
+        >
           {/* Colored segments */}
           {segments.map((s) => {
             const sa = angleForValue(s.from);
@@ -100,7 +141,7 @@ const BmiGauge: React.FC<GaugeProps> = ({ bmi }) => {
           {/* Tick labels */}
           {ticks.map((t) => {
             const a = angleForValue(t);
-            const p = polarToCartesian(cx, cy, rInner - 16, a);
+            const p = polarToCartesian(cx, cy, rInner - (isMobile ? 12 : 16), a);
             return (
               <text
                 key={t}
@@ -108,7 +149,7 @@ const BmiGauge: React.FC<GaugeProps> = ({ bmi }) => {
                 y={p.y}
                 textAnchor="middle"
                 dominantBaseline="central"
-                fontSize={11}
+                fontSize={isMobile ? 9 : 11}
                 fill="hsl(var(--muted-foreground))"
               >
                 {t}
@@ -125,29 +166,19 @@ const BmiGauge: React.FC<GaugeProps> = ({ bmi }) => {
             }}
           >
             <polygon
-              points={`${cx - 8},${cy - 6} ${cx + 8},${cy - 6} ${cx},${cy - (rInner - 8)}`}
+              points={`${cx - (isMobile ? 6 : 8)},${cy - (isMobile ? 4 : 6)} ${cx + (isMobile ? 6 : 8)},${cy - (isMobile ? 4 : 6)} ${cx},${cy - (rInner - (isMobile ? 6 : 8))}`}
               fill="hsl(var(--foreground))"
             />
           </g>
         </svg>
-
-        {/* Center value */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
-          <div className="text-4xl md:text-5xl font-bold" style={{ color: cat ? `hsl(var(${cat.colorVar}))` : undefined }}>
-            {bmi ? bmi.toFixed(1) : "--"}
-          </div>
-          <div className="mt-1 text-sm font-medium" style={{ color: cat ? `hsl(var(${cat.colorVar}))` : undefined }}>
-            {cat ? (cat.label === "Normal" ? "Normal" : cat.label) : ""}
-          </div>
-        </div>
       </div>
 
       {/* Legend */}
-      <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+      <div className="mt-3 md:mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 md:gap-x-6 gap-y-1 md:gap-y-2 text-xs md:text-sm">
         {segments.map((s) => (
           <div key={s.label} className="flex items-center gap-2">
             <span
-              className="inline-block h-3 w-3 rounded-full"
+              className="inline-block h-2 md:h-3 w-2 md:w-3 rounded-full"
               style={{ backgroundColor: `hsl(var(${s.colorVar}))` }}
               aria-hidden
             />
