@@ -7,9 +7,9 @@ import BmiGauge from "@/components/BmiGauge";
 import { SlidersHorizontal } from "lucide-react";
 
 const Index = () => {
-  const [feet, setFeet] = useState<number | "">(00);
-  const [inches, setInches] = useState<number | "">(00);
-  const [weight, setWeight] = useState<number | "">(00);
+  const [feet, setFeet] = useState<number | "">(0);
+  const [inches, setInches] = useState<number | "">(0);
+  const [weight, setWeight] = useState<number | "">(0);
   const [bmi, setBmi] = useState<number | null>(null);
 
   useEffect(() => {
